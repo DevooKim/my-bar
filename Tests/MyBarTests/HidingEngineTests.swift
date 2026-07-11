@@ -57,4 +57,22 @@ struct HidingEngineTests {
         e.handle(.toggle)
         #expect(seen == [.expanded, .collapsed])
     }
+
+    @Test func timerFireWhileInteractingDefersAndReschedules() {
+        let e = makeEngine(delay: 10)
+        e.shouldDeferRehide = { true }
+        e.handle(.toggle)
+        e.rehideTimerDidFire()
+        #expect(e.state == .expanded)
+        #expect(e.rehideTimerActive)
+    }
+
+    @Test func timerFireWhileIdleCollapses() {
+        let e = makeEngine(delay: 10)
+        e.shouldDeferRehide = { false }
+        e.handle(.toggle)
+        e.rehideTimerDidFire()
+        #expect(e.state == .collapsed)
+        #expect(!e.rehideTimerActive)
+    }
 }

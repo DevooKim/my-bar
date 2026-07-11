@@ -136,6 +136,17 @@ final class StatusBarController {
         return true
     }
 
+    /// 좌표가 어느 화면의 메뉴바 밴드(상단 thickness 높이) 안인지 판정한다.
+    /// 상·하한을 모두 검사해야 한다 — 하한만 보면 위쪽에 배치된 다른 화면의
+    /// 모든 클릭이 아래 화면의 "메뉴바"로 오분류된다 (상하 멀티 모니터).
+    nonisolated static func isInMenuBarBand(_ location: CGPoint, screenFrames: [CGRect], menuBarThickness: CGFloat) -> Bool {
+        screenFrames.contains { f in
+            location.x >= f.minX && location.x <= f.maxX
+                && location.y <= f.maxY + 1
+                && location.y >= f.maxY - menuBarThickness - 1
+        }
+    }
+
     func validateOrderAndRepairIfNeeded() {
         // 접힘 상태에선 구분자가 화면 밖이라 좌표가 의미 없다.
         guard engine.state != .collapsed else { return }

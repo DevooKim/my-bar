@@ -24,6 +24,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         engine.alwaysHiddenEnabled = { [weak self] in self?.prefs.alwaysHiddenEnabled ?? false }
         engine.rehideDelay = { [weak self] in self?.prefs.rehideSeconds ?? 0 }
+        engine.shouldDeferRehide = {
+            // ⌘드래그로 아이콘 정리 중이거나 마우스가 메뉴바 위에 있으면 접지 않는다.
+            if NSEvent.modifierFlags.contains(.command) { return true }
+            return StatusBarController.isInMenuBarBand(
+                NSEvent.mouseLocation,
+                screenFrames: NSScreen.screens.map(\.frame),
+                menuBarThickness: NSStatusBar.system.thickness
+            )
+        }
 
         statusBar = StatusBarController(engine: engine, prefs: prefs)
         menuBuilder = AppMenuBuilder(engine: engine, prefs: prefs, app: app)
