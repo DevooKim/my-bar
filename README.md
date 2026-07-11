@@ -32,9 +32,6 @@ make run      # bundle and launch dist/My Bar.app
 make publish  # tag + GitHub release (bump version first: make bump-patch)
 ```
 
-Note: `Resources/AppIcon.icns` is a placeholder copied from my-window-manager —
-replace it with a dedicated icon before a public release.
-
 ## License
 
 MIT
