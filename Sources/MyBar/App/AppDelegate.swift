@@ -3,24 +3,27 @@ import Combine
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private(set) var prefs: PreferencesStore!
-    private(set) var engine: HidingEngine!
-    private(set) var hotkeys: HotkeyManager!
-    private(set) var app: AppState!
+    let prefs: PreferencesStore
+    let engine: HidingEngine
+    let hotkeys: HotkeyManager
+    let updatePrompt: UpdatePromptState
+    let app: AppState
     private(set) var statusBar: StatusBarController!
     private var menuBuilder: AppMenuBuilder!
     private var cancellables = Set<AnyCancellable>()
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    override init() {
         prefs = PreferencesStore()
-
         engine = HidingEngine()
+        hotkeys = HotkeyManager()
+        updatePrompt = UpdatePromptState()
+        app = AppState(prefs: prefs, engine: engine, hotkeys: hotkeys, updatePrompt: updatePrompt)
+        super.init()
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
         engine.alwaysHiddenEnabled = { [weak self] in self?.prefs.alwaysHiddenEnabled ?? false }
         engine.rehideDelay = { [weak self] in self?.prefs.rehideSeconds ?? 0 }
-
-        hotkeys = HotkeyManager()
-        let updatePrompt = UpdatePromptState()
-        app = AppState(prefs: prefs, engine: engine, hotkeys: hotkeys, updatePrompt: updatePrompt)
 
         statusBar = StatusBarController(engine: engine, prefs: prefs)
         menuBuilder = AppMenuBuilder(engine: engine, prefs: prefs, app: app)

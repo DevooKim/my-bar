@@ -1,11 +1,10 @@
 import SwiftUI
 
-/// 업데이트 창(NSWindow)의 루트 뷰. 현재 프롬프트를 렌더하고,
-/// 사용자가 처리하면 dismiss 클로저로 창을 닫는다.
+/// Root view for the SwiftUI update window scene. Renders the current prompt
+/// and closes the window once the user resolves it.
 struct UpdateWindowRoot: View {
     @EnvironmentObject var state: UpdatePromptState
-    /// AppState가 주입 — 프롬프트가 사라지면 호스트 NSWindow를 닫는다.
-    var dismiss: () -> Void
+    @Environment(\.dismissWindow) private var dismissWindow
 
     var body: some View {
         Group {
@@ -14,12 +13,13 @@ struct UpdateWindowRoot: View {
                     state.resolve(action)
                 }
             } else {
+                // No active prompt — keep the window empty and dismiss it.
                 Color.clear
                     .frame(width: 1, height: 1)
             }
         }
         .onChange(of: state.prompt == nil) { _, isEmpty in
-            if isEmpty { dismiss() }
+            if isEmpty { dismissWindow(id: UpdatePromptState.windowID) }
         }
     }
 }

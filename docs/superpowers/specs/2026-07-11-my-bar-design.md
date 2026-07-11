@@ -157,9 +157,9 @@ window-manager `InfoView`와 **동일 구현** (이름·URL만 교체):
 ```
 Sources/MyBar/
   App/
-    MyBarApp.swift          @main. Window scenes(설정/정보/업데이트/온보딩) 정의
+    MyBarApp.swift          @main. Window scenes(설정/정보/업데이트) 정의
     AppDelegate.swift       StatusBarController·Updater 연결, reopen 처리
-    AppState.swift          창 open 액션 주입, 선택 탭 등 (window-manager 패턴)
+    AppState.swift          openWindow 호출·온보딩 창 소유, 선택 탭 등 (window-manager 패턴)
   Core/
     StatusBarController.swift  NSStatusItem 3개 생성·순서 검증·클릭 라우팅
     HidingEngine.swift         상태머신 + 자동 재숨김 타이머 (AppKit 비의존)
@@ -184,18 +184,28 @@ Tests/MyBarTests/
 - 주의: 메인 토글 아이콘은 SwiftUI `MenuBarExtra`가 아니라 **NSStatusItem**으로
   만든다. 좌클릭 토글/우클릭 메뉴 분리와 구분자 아이템들과의 순서 제어가
   필요하기 때문.
-- 창 관리: window-manager의 "Window scene + openWindow 주입" 패턴은 항상
-  렌더되는 MenuBarExtra label이 있어야 동작하는데(주입 지점), my-bar에는 그
-  호스트가 없다. 따라서 설정·정보·업데이트·온보딩 창은 window-manager의
-  온보딩 창과 같은 **NSWindow + NSHostingController** 패턴으로 AppState가
-  소유·재사용한다. UI 구조(NavigationSplitView 사이드바, hiddenTitleBar 스타일,
-  VisualEffectView 머티리얼)는 동일하게 유지한다.
+- 창 관리: 설정·정보·업데이트 창은 window-manager(WM)와 동일하게 SwiftUI
+  `Window` scene + `.windowStyle(.hiddenTitleBar)`로 소유한다. 수동
+  NSWindow + NSHostingController로 열면 SwiftUI가 윈도우 통합을 못 잡아
+  사이드바 머티리얼이 타이틀바(신호등) 영역까지 채워지지 않고 창 투명도
+  (behind-window vibrancy)도 동작하지 않기 때문이다. WM은 openWindow 액션을
+  MenuBarExtra label에 주입해 받아오지만 my-bar에는 MenuBarExtra가 없다 —
+  대신 AppKit 컨텍스트(AppDelegate 등)에서 `EnvironmentValues().openWindow(id:)`를
+  직접 호출하는 방식이 이 환경에서 동작함을 스파이크로 검증했고, `AppState`의
+  `openSettings`/`openAbout`/`openUpdateWindow`가 이 방식으로 각 scene을 연다.
+  LSUIElement 앱이라도 Window scene은 실행 시 자동으로 표시되므로,
+  macOS 15+의 `.defaultLaunchBehavior(.suppressed)` + `.restorationBehavior(.disabled)`
+  로 억제한다 (이 때문에 배포 타겟을 macOS 15로 상향 — §8). 온보딩 창만 예외로
+  기존처럼 **NSWindow + NSHostingController**를 AppState가 직접 소유한다
+  (WM도 온보딩류는 수동 창). UI 구조(NavigationSplitView 사이드바,
+  hiddenTitleBar 스타일, VisualEffectView 머티리얼)는 모든 창에서 동일하게
+  유지한다.
 
 ## 8. 빌드 · 버전관리 · 배포 · 서명 (window-manager와 동일)
 
 | 항목 | 내용 |
 |---|---|
-| 패키지 | SwiftPM 실행형, swift-tools 6.0, `swiftLanguageModes: [.v5]`, macOS 14+, 의존성 HotKey |
+| 패키지 | SwiftPM 실행형, swift-tools 6.0, `swiftLanguageModes: [.v5]`, macOS 15+ (`.defaultLaunchBehavior`/`.restorationBehavior` 억제를 위해 상향), 의존성 HotKey |
 | Makefile | window-manager 것 복사: `build/test/app/run/release/publish/bump-*` + CLT Swift Testing TESTFLAGS 트릭 |
 | 버전 | `Info.plist` `CFBundleShortVersionString`(semver) + `CFBundleVersion`(빌드번호), `scripts/bump.sh` (깨끗한 트리 강제, 커밋까지) |
 | 번들 | `scripts/bundle.sh`: `swift build -c release` → `dist/My Bar.app` 조립 |
@@ -211,7 +221,9 @@ window-manager 것 기반, 차이점만:
 - `CFBundleDisplayName`: `My Bar` / `CFBundleName`: `MyBar` / `CFBundleExecutable`: `MyBar`
 - `CFBundleIdentifier`: `io.goorm.MyBar`
 - `NSAccessibilityUsageDescription` **제거** (v1은 무권한)
-- `LSMinimumSystemVersion`: `14.0` (패키지 platforms `.v14`와 일치 — 참조 앱은 13.0으로 남아있는 불일치가 있으니 답습하지 않음)
+- `LSMinimumSystemVersion`: `15.0` (패키지 platforms `.v15`와 일치 — Window scene의
+  `.defaultLaunchBehavior(.suppressed)`/`.restorationBehavior(.disabled)`가
+  macOS 15+ API라 상향함. 참조 앱은 13.0으로 남아있는 불일치가 있으니 답습하지 않음)
 - 유지: `LSUIElement=true`, ko/en localizations, productivity 카테고리, 초기 버전 0.1.0 / 빌드 1
 
 ## 9. 에러 처리·엣지 케이스

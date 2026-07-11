@@ -1,11 +1,14 @@
 import SwiftUI
 import AppKit
 
-/// 설정·정보·업데이트·온보딩 창을 NSWindow + NSHostingController로 소유한다.
-/// (window-manager의 openWindow 주입 패턴은 항상 렌더되는 MenuBarExtra label이
-/// 필요해 이 앱에선 쓸 수 없다 — 스펙 §7.)
+/// 설정·정보·업데이트 창은 SwiftUI Window scene(.hiddenTitleBar)이 소유한다 —
+/// AppKit 컨텍스트에서는 EnvironmentValues().openWindow(id:)로 연다 (스펙 §7).
+/// 온보딩 창만 예외적으로 NSWindow + NSHostingController를 직접 소유한다.
 @MainActor
 final class AppState: ObservableObject {
+    static let settingsWindowID = "settings"
+    static let aboutWindowID = "about"
+
     @Published var selectedTab: SettingsTab = .general
 
     let prefs: PreferencesStore
@@ -13,11 +16,7 @@ final class AppState: ObservableObject {
     let hotkeys: HotkeyManager
     let updatePrompt: UpdatePromptState
 
-    private var settingsWindow: NSWindow?
-    private var aboutWindow: NSWindow?
-    private var updateWindow: NSWindow?
     private var onboardingWindow: NSWindow?
-    private var updateCloseDelegate: UpdateWindowCloseDelegate?
 
     init(prefs: PreferencesStore, engine: HidingEngine, hotkeys: HotkeyManager, updatePrompt: UpdatePromptState) {
         self.prefs = prefs
@@ -28,38 +27,20 @@ final class AppState: ObservableObject {
 
     func openSettings(_ tab: SettingsTab = .general) {
         selectedTab = tab
-        if settingsWindow == nil {
-            let root = SettingsRootView()
-                .environmentObject(self)
-                .environmentObject(prefs)
-                .environmentObject(hotkeys)
-            settingsWindow = makeWindow(root, title: "My Bar",
-                                        size: NSSize(width: 640, height: 480), resizable: true)
-        }
-        present(settingsWindow)
+        // 스파이크 검증됨: SwiftUI 앱 라이프사이클에서는 EnvironmentValues()로
+        // 얻은 openWindow 액션이 AppKit 컨텍스트에서도 해당 scene을 연다.
+        EnvironmentValues().openWindow(id: Self.settingsWindowID)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func openAbout() {
-        if aboutWindow == nil {
-            let root = InfoView().frame(width: 320)
-            aboutWindow = makeWindow(root, title: "My Bar 정보")
-        }
-        present(aboutWindow)
+        EnvironmentValues().openWindow(id: Self.aboutWindowID)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
-    /// Updater.openWindow로 주입 — 프롬프트가 설정된 뒤 호출된다.
     func openUpdateWindow() {
-        if updateWindow == nil {
-            let root = UpdateWindowRoot(dismiss: { [weak self] in self?.updateWindow?.close() })
-                .environmentObject(updatePrompt)
-            let window = makeWindow(root, title: "")
-            // 사용자가 창을 그냥 닫으면 대기 중인 프롬프트를 dismiss로 해결한다.
-            let delegate = UpdateWindowCloseDelegate(state: updatePrompt)
-            window.delegate = delegate
-            updateCloseDelegate = delegate
-            updateWindow = window
-        }
-        present(updateWindow)
+        EnvironmentValues().openWindow(id: UpdatePromptState.windowID)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func openOnboarding() {
@@ -93,15 +74,5 @@ final class AppState: ObservableObject {
         if let size { window.setContentSize(size) }
         window.center()
         return window
-    }
-}
-
-/// 업데이트 창이 닫힐 때 대기 중인 continuation을 dismiss로 풀어준다.
-@MainActor
-final class UpdateWindowCloseDelegate: NSObject, NSWindowDelegate {
-    private let state: UpdatePromptState
-    init(state: UpdatePromptState) { self.state = state }
-    func windowWillClose(_ notification: Notification) {
-        state.resolve(.dismiss)
     }
 }
