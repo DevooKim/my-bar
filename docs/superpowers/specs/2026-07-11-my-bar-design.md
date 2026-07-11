@@ -183,8 +183,13 @@ Tests/MyBarTests/
 
 - 주의: 메인 토글 아이콘은 SwiftUI `MenuBarExtra`가 아니라 **NSStatusItem**으로
   만든다. 좌클릭 토글/우클릭 메뉴 분리와 구분자 아이템들과의 순서 제어가
-  필요하기 때문. 설정·정보·업데이트 창은 window-manager처럼 SwiftUI Window
-  scene을 쓰고, AppState의 open 액션 주입 패턴을 재사용한다.
+  필요하기 때문.
+- 창 관리: window-manager의 "Window scene + openWindow 주입" 패턴은 항상
+  렌더되는 MenuBarExtra label이 있어야 동작하는데(주입 지점), my-bar에는 그
+  호스트가 없다. 따라서 설정·정보·업데이트·온보딩 창은 window-manager의
+  온보딩 창과 같은 **NSWindow + NSHostingController** 패턴으로 AppState가
+  소유·재사용한다. UI 구조(NavigationSplitView 사이드바, hiddenTitleBar 스타일,
+  VisualEffectView 머티리얼)는 동일하게 유지한다.
 
 ## 8. 빌드 · 버전관리 · 배포 · 서명 (window-manager와 동일)
 
