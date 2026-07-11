@@ -4,9 +4,11 @@
 
 <h1 align="center">My Bar</h1>
 
+<p align="center">English · <a href="README.ko.md">한국어</a></p>
+
 Hide menu bar icons on macOS. Icons dragged (⌘-drag) to the left of the
-separator are hidden when collapsed; click the main icon or press ⇧⌘\ to
-toggle. Inspired by Hidden Bar.
+separator are hidden when collapsed; click the main icon or press your
+toggle shortcut to show/hide. Inspired by Hidden Bar.
 
 - No special permissions required (no Accessibility, no Screen Recording)
 - Auto-rehide after a configurable delay
@@ -23,7 +25,7 @@ toggle. Inspired by Hidden Bar.
 ## Usage
 
 - **⌘-drag** menu bar icons across the `|` separator to choose what gets hidden.
-- **Click** the main icon (❮/❯) or press **⇧⌘\\** to expand/collapse.
+- **Click** the main icon (❮/❯) or press your **toggle shortcut** to expand/collapse. Set the shortcut in Settings → General.
 - **Right-click** the main icon for the menu (settings, update, quit).
 - **⌥-click** to also reveal the always-hidden section (enable it in Settings).
 
