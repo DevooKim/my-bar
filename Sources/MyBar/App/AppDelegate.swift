@@ -72,13 +72,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleOutsideClick() {
         guard prefs.rehideOnOutsideClick, engine.state != .collapsed else { return }
         // 메뉴바 안 클릭은 숨겼던 아이콘을 쓰는 중일 수 있으니 타이머에 맡긴다.
-        let loc = NSEvent.mouseLocation
-        let inMenuBar = NSScreen.screens.contains { screen in
-            let f = screen.frame
-            return loc.x >= f.minX && loc.x <= f.maxX
-                && loc.y >= f.maxY - NSStatusBar.system.thickness - 1
-        }
+        let inMenuBar = Self.isInMenuBarBand(
+            NSEvent.mouseLocation,
+            screenFrames: NSScreen.screens.map(\.frame),
+            menuBarThickness: NSStatusBar.system.thickness
+        )
         guard !inMenuBar else { return }
         engine.handle(.collapse)
+    }
+
+    /// 좌표가 어느 화면의 메뉴바 밴드(상단 thickness 높이) 안인지 판정한다.
+    /// 상·하한을 모두 검사해야 한다 — 하한만 보면 위쪽에 배치된 다른 화면의
+    /// 모든 클릭이 아래 화면의 "메뉴바"로 오분류된다 (상하 멀티 모니터 버그).
+    nonisolated static func isInMenuBarBand(_ location: CGPoint, screenFrames: [CGRect], menuBarThickness: CGFloat) -> Bool {
+        screenFrames.contains { f in
+            location.x >= f.minX && location.x <= f.maxX
+                && location.y <= f.maxY + 1
+                && location.y >= f.maxY - menuBarThickness - 1
+        }
     }
 }
