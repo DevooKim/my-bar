@@ -33,7 +33,6 @@ struct SettingsRootView: View {
             detailView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .navigationTitle("")
-                .safeAreaPadding(.top, 24)
                 .background(
                     VisualEffectView(
                         material: app.selectedTab.hasTranslucentDetail ? .hudWindow : .windowBackground,
