@@ -72,7 +72,8 @@ collapsed ──토글──▶ expanded ──⌥클릭/명령──▶ fullyEx
 - `fullyExpanded`는 항상 숨김 영역 사용 시에만 존재.
 - 자동 재숨김 타이머: expanded/fullyExpanded 진입 시 시작, 만료 시 collapsed로.
   설정값 초 단위(기본 10초, 0 = 자동 재숨김 없음). 메뉴가 열려 있는 동안은 보류.
-- 옵션: "다른 곳 클릭 시 즉시 재숨김" (글로벌 마우스다운 모니터, 기본 on).
+- (제거됨 2026-07-11) "다른 곳 클릭 시 즉시 재숨김"은 v1에서 구현했다가 제거 —
+  글로벌 클릭 모니터가 환경에 따라 동작이 불안정했고 자동 재숨김 타이머로 충분.
 
 ## 4. 인터랙션
 
@@ -129,7 +130,6 @@ window-manager와 동일한 구조: SwiftUI `Window` scene + `.hiddenTitleBar`
 - 로그인 시 시작 (`LoginItemManager` 복사 — SMAppService)
 - 토글 단축키 (HotkeyCaptureView)
 - 자동 재숨김: 사용 여부 + 초 (기본 10초)
-- 다른 곳 클릭 시 즉시 재숨김 (기본 on)
 - 항상 숨김 영역 사용 (기본 off) + ⌥클릭 안내 문구
 - 메뉴바 아이콘 모양 선택 (SF Symbol 2~3종)
 - 노치 안내 배너 (노치 감지 시에만 표시, §6)

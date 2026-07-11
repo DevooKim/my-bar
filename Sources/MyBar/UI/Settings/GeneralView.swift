@@ -49,7 +49,6 @@ struct GeneralView: View {
                         step: 1
                     )
                 }
-                Toggle("다른 곳을 클릭하면 바로 숨기기", isOn: $prefs.rehideOnOutsideClick)
             }
 
             Section {

@@ -11,7 +11,6 @@ struct PreferencesStoreTests {
     @Test func defaults() {
         let store = PreferencesStore(defaults: freshDefaults())
         #expect(store.rehideSeconds == 10)
-        #expect(store.rehideOnOutsideClick)
         #expect(!store.alwaysHiddenEnabled)
         #expect(store.iconStyle == .chevron)
         #expect(store.needsSetup)

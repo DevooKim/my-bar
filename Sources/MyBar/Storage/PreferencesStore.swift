@@ -34,7 +34,6 @@ final class PreferencesStore: ObservableObject {
 
     private enum Key {
         static let rehideSeconds = "rehideSeconds"
-        static let rehideOnOutsideClick = "rehideOnOutsideClick"
         static let alwaysHiddenEnabled = "alwaysHiddenEnabled"
         static let toggleHotkey = "toggleHotkey"
         static let iconStyle = "iconStyle"
@@ -49,9 +48,6 @@ final class PreferencesStore: ObservableObject {
 
     @Published var rehideSeconds: Double {
         didSet { defaults.set(rehideSeconds, forKey: Key.rehideSeconds) }
-    }
-    @Published var rehideOnOutsideClick: Bool {
-        didSet { defaults.set(rehideOnOutsideClick, forKey: Key.rehideOnOutsideClick) }
     }
     @Published var alwaysHiddenEnabled: Bool {
         didSet { defaults.set(alwaysHiddenEnabled, forKey: Key.alwaysHiddenEnabled) }
@@ -77,13 +73,11 @@ final class PreferencesStore: ObservableObject {
         self.defaults = defaults
         defaults.register(defaults: [
             Key.rehideSeconds: 10.0,
-            Key.rehideOnOutsideClick: true,
             Key.alwaysHiddenEnabled: false,
             Key.iconStyle: MenuIconStyle.chevron.rawValue,
             Key.needsSetup: true,
         ])
         rehideSeconds = defaults.double(forKey: Key.rehideSeconds)
-        rehideOnOutsideClick = defaults.bool(forKey: Key.rehideOnOutsideClick)
         alwaysHiddenEnabled = defaults.bool(forKey: Key.alwaysHiddenEnabled)
         iconStyle = MenuIconStyle(rawValue: defaults.string(forKey: Key.iconStyle) ?? "") ?? .chevron
         needsSetup = defaults.bool(forKey: Key.needsSetup)
