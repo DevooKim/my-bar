@@ -1,4 +1,8 @@
-# My Bar
+<p align="center">
+  <img src="docs/assets/icon.png" width="128" alt="My Bar icon">
+</p>
+
+<h1 align="center">My Bar</h1>
 
 Hide menu bar icons on macOS. Icons dragged (⌘-drag) to the left of the
 separator are hidden when collapsed; click the main icon or press ⇧⌘\ to

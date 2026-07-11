@@ -1,4 +1,8 @@
-# My Bar
+<p align="center">
+  <img src="docs/assets/icon.png" width="128" alt="My Bar 아이콘">
+</p>
+
+<h1 align="center">My Bar</h1>
 
 macOS 메뉴바 아이콘을 숨겨 주는 앱. 구분자(`|`) 왼쪽으로 ⌘드래그한 아이콘은
 접을 때 숨겨지고, 메인 아이콘 클릭 또는 ⇧⌘\ 로 펼치고 숨깁니다.
